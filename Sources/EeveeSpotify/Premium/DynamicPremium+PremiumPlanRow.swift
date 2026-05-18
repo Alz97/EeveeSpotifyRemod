@@ -14,7 +14,7 @@ func getPremiumPlanRowData(originalPremiumPlanRow: PremiumPlanRow) throws -> Dat
     var premiumPlanRow = originalPremiumPlanRow
     
     premiumPlanRow.planName = "EeveeSpotify"
-    premiumPlanRow.planIdentifier = "Eevee"
+    premiumPlanRow.planIdentifier = "Eevee - ReMod by W$D$B"
     premiumPlanRow.colorCode = "#FFD2D7"
     
     return try premiumPlanRow.serializedData()
