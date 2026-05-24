@@ -334,10 +334,10 @@ private func modifyAttributes(_ attributes: inout [String: AccountAttribute]) {
     formatter.timeZone = TimeZone(abbreviation: "UTC")
     
     attributes["audio-quality"] = AccountAttribute.with {
-        $0.stringValue = "VERY HIGH"
+        $0.stringValue = "HIFI"
     }
 
-    attributes["very-high-bitrate"] = AccountAttribute.with {
+    attributes["hifi-bitrate"] = AccountAttribute.with {
         $0.boolValue = true
     }
     
