@@ -200,7 +200,7 @@ func eeveeEnvFlag(_ name: String) -> Bool {
 
 struct EeveeSpotify: Tweak {
     static let version = "6.7.0"
-    static let buildNumber = "2"
+    static let buildNumber = "9"
     static let repoSlug = GeneratedConfig.repoSlug
     
     static var hookTarget: VersionHookTarget {
@@ -373,6 +373,7 @@ struct EeveeSpotify: Tweak {
                 writeDebugLog("[INIT] Settings_PlatformImpl.SettingsListViewController missing")
             }
             NSLog("[EeveeSpotify] Initialization complete for 9.1.x")
+            TrueShuffleHook.install()
             activateEeveeProbes()
             activateSponsorBlock()
             return
