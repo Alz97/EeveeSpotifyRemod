@@ -2,6 +2,7 @@ enum EeveePropertyModification {
     case remove
     case setBool(Bool)
     case setEnum(String)
+    case forceBool(Bool)
 }
 
 struct EeveePropertyReplacement {
