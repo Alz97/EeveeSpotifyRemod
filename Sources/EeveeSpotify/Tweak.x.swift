@@ -232,7 +232,7 @@ struct EeveeSpotify: Tweak {
         // patching / network interception. Keeps premium UI/state even if every
         // other Eevee path is disabled.
         activateEeveePremiumForce()
-
+        activateEeveeCrossfadeForce()
         // TESTING: extended ad blocker (NPV/lyrics ad, home brand-ads, in-stream).
         activateEeveeAdBlockerExtended()
 
