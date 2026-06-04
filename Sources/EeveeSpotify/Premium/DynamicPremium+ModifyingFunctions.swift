@@ -16,6 +16,8 @@ func modifyRemoteConfiguration(_ configuration: inout UcsResponse) {
 
 private let propertyReplacements = [
     // capping
+    EeveePropertyReplacement(name: "crossfade_enabled", scope: "ios-feature-settings", modification: .forceBool(true)),
+    EeveePropertyReplacement(name: "automix_enabled", scope: "ios-feature-settings", modification: .forceBool(true)),
     EeveePropertyReplacement(name: "enable_common_capping", modification: .remove),
     EeveePropertyReplacement(name: "enable_pns_common_capping", modification: .remove),
     EeveePropertyReplacement(name: "enable_pick_and_shuffle_common_capping", modification: .remove),
@@ -311,6 +313,15 @@ private func modifyAssignedValues(_ values: inout [AssignedValue]) {
             let scopeMatches = replacement.scope.map { value.propertyID.scope == $0 } ?? true
             return nameMatches && scopeMatches
         })
+
+        if matchingIndices.isEmpty, case .forceBool(let newValue) = replacement.modification,
+           let name = replacement.name, let scope = replacement.scope {
+            values.append(AssignedValue.with {
+                $0.propertyID = AssignedIdentifier.with { $0.scope = scope; $0.name = name }
+                $0.boolValue = BoolValue.with { $0.value = newValue }
+            })
+            continue
+        }
         
         for index in matchingIndices.sorted(by: >) {
             switch replacement.modification {
@@ -322,6 +333,9 @@ private func modifyAssignedValues(_ values: inout [AssignedValue]) {
                 
             case .setEnum(let newValue):
                 values[index].enumValue = EnumValue.with { $0.value = newValue }
+            
+            case .forceBool(let newValue):
+                values[index].boolValue = BoolValue.with { $0.value = newValue }
             }
         }
     }
@@ -332,12 +346,57 @@ private func modifyAttributes(_ attributes: inout [String: AccountAttribute]) {
     
     let formatter = ISO8601DateFormatter()
     formatter.timeZone = TimeZone(abbreviation: "UTC")
-    
-    attributes["audio-quality"] = AccountAttribute.with {
-        $0.stringValue = "HIFI"
+
+    attributes["enable-crossfade-product-state"] = AccountAttribute.with {
+        $0.stringValue = "1"
     }
 
-    attributes["hifi-bitrate"] = AccountAttribute.with {
+    attributes["enable-gapless-product-state"] = AccountAttribute.with {
+        $0.stringValue = "1"
+    }
+    
+    attributes["audio-quality"] = AccountAttribute.with {
+        $0.stringValue = "1"
+    }
+
+    attributes["high-bitrate"] = AccountAttribute.with {
+        $0.boolValue = true
+    }
+
+    attributes["loudness-levels"] = AccountAttribute.with {
+        $0.stringValue = "1:-5.0,0.0,3.0:-2.0"
+    }
+
+    attributes["pick-and-shuffle"] = AccountAttribute.with {
+        $0.boolValue = false
+    }
+
+    attributes["offline-backup"] = AccountAttribute.with {
+        $0.stringValue = "UNRESTRICTED"
+    }
+
+    attributes["lyrics-offline"] = AccountAttribute.with {
+        $0.boolValue = true
+    }
+
+    attributes["mixing-tools"] = AccountAttribute.with {
+        $0.stringValue = "EDIT"
+    }
+
+    attributes["jam-social-session"] = AccountAttribute.with {
+        $0.stringValue = "EXPANDED"
+    }
+
+    attributes["your-library-tags"] = AccountAttribute.with {
+        $0.boolValue = true
+    }
+
+    // Unknown purpose; premium sets these to 1.
+    attributes["libspotify"] = AccountAttribute.with {
+        $0.boolValue = true
+    }
+
+    attributes["mobile"] = AccountAttribute.with {
         $0.boolValue = true
     }
     
