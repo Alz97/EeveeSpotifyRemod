@@ -236,6 +236,14 @@ struct EeveeSpotify: Tweak {
         // TESTING: extended ad blocker (NPV/lyrics ad, home brand-ads, in-stream).
         activateEeveeAdBlockerExtended()
 
+        activateUpsellPopupBlocker()
+
+        // Block upsell components injected into Hub/home JSON (e.g. upgrade banners).
+        if NSClassFromString("HUBViewModelBuilderImplementation") != nil {
+            AdBlockerGroup().activate()
+            log("[EeveeSpotify] AdBlockerGroup activated")
+        }
+
         // activateEeveeFlexGesture()
 
         // Global kill-switch for debugging “instant crash / no logs”.
