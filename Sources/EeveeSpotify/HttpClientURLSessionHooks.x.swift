@@ -37,11 +37,13 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
 
         if SpotifyResponsePatcher.handledCustomizeTasks.remove(task.taskIdentifier) != nil {
             orig.URLSession(session, task: task, didCompleteWithError: nil)
+            URLSessionHelper.shared.discardData(for: task)
             return
         }
 
         guard error == nil, SpotifyResponsePatcher.shouldModify(url) else {
             orig.URLSession(session, task: task, didCompleteWithError: error)
+            URLSessionHelper.shared.discardData(for: task)
             return
         }
 
@@ -61,14 +63,7 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
 
         do {
             if url.isLyrics {
-                let originalLyrics = try? Lyrics(serializedBytes: buffer)
-                let semaphore = DispatchSemaphore(value: 0)
-                var customLyricsData: Data?
-                DispatchQueue.global(qos: .userInitiated).async {
-                    customLyricsData = try? getLyricsDataForCurrentTrack(url.path, originalLyrics: originalLyrics)
-                    semaphore.signal()
-                }
-                _ = semaphore.wait(timeout: .now() + .milliseconds(5000))
+                let customLyricsData = LyricsPrefetch.pop(task)
                 orig.URLSession(session, dataTask: task, didReceiveData: customLyricsData ?? buffer)
                 orig.URLSession(session, task: task, didCompleteWithError: nil)
                 return
@@ -104,19 +99,16 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
             return
         }
 
-        guard let url = task.currentRequest?.url, url.isLyrics, response.statusCode != 200 else {
-            orig.URLSession(session, dataTask: task, didReceiveResponse: response, completionHandler: handler)
-            return
-        }
+        if let url = task.currentRequest?.url, url.isLyrics {
+            if response.statusCode != 200 {
+                let ok = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "2.0", headerFields: [:])!
+                orig.URLSession(session, dataTask: task, didReceiveResponse: ok, completionHandler: handler)
+            } else {
+                orig.URLSession(session, dataTask: task, didReceiveResponse: response, completionHandler: handler)
+            }
+            LyricsPrefetch.start(task: task, path: url.path)
 
-        do {
-            let data = try getLyricsDataForCurrentTrack(url.path)
-            let ok = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "2.0", headerFields: [:])!
-            orig.URLSession(session, dataTask: task, didReceiveResponse: ok, completionHandler: handler)
-            orig.URLSession(session, dataTask: task, didReceiveData: data)
-        } catch {
-            orig.URLSession(session, task: task, didCompleteWithError: error)
-        }
+        orig.URLSession(session, dataTask: task, didReceiveResponse: response, completionHandler: handler)
     }
 
     func URLSession(
