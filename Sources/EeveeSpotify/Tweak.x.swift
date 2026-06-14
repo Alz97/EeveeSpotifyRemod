@@ -276,6 +276,8 @@ struct EeveeSpotify: Tweak {
         writeDebugLog("[INIT] Lyrics source: \(UserDefaults.lyricsSource)")
         writeDebugLog("[INIT] tweakInitTime: \(tweakInitTime)")
 
+        activateCarPlayCrashFix()
+
         // Verify critical hook targets exist
         let hookTargets: [(String, String)] = [
             ("SPTAuthSessionImplementation", "SPTAuthSession"),
