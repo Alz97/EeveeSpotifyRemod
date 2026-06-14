@@ -106,7 +106,6 @@ class SpotifySessionDelegateBootstrapHook: ClassHook<NSObject>, SpotifySessionDe
             }
         }
 
-        URLSessionHelper.shared.discardData(for: task)
         orig.URLSession(session, task: task, didCompleteWithError: error)
     }
 }
