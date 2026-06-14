@@ -22,7 +22,7 @@ private let petitLyricsRepository = PetitLyricsRepository()
 // Overload for 9.1.6 where we only have track ID from URL
 private func loadCustomLyricsForTrackId(_ trackId: String) throws -> Lyrics {
     
-    let source = UserDefaults.lyricsSource
+    var source = UserDefaults.lyricsSource
     
     // Always clear captured metadata to ensure we fetch fresh info
     var currentTitle: String? = nil
@@ -62,33 +62,36 @@ private func loadCustomLyricsForTrackId(_ trackId: String) throws -> Lyrics {
         }
 
         if !hasMetadata {
-            // Try MPNowPlayingInfoCenter (always available, version-independent)
-            if let info = MPNowPlayingInfoCenter.default().nowPlayingInfo,
-               let title = info[MPMediaItemPropertyTitle] as? String,
-               let artist = info[MPMediaItemPropertyArtist] as? String,
-               !title.isEmpty, !artist.isEmpty {
-                currentTitle = title
-                currentArtist = artist
-                hasMetadata = true
-                capturedTrackId = trackId
-                capturedTrackTitle = title
-                capturedArtistName = artist
+            var npTitle: String? = nil
+            var npArtist: String? = nil
+        if Thread.isMainThread {
+                npTitle = MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyTitle] as? String
+                npArtist = MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] as? String
+        } else {
+            DispatchQueue.main.sync {
+                npTitle = MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyTitle] as? String
+                npArtist = MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] as? String
             }
         }
 
-        if !hasMetadata {
-            if let token = spotifyAccessToken {
-                if let info = fetchTrackDetails(trackId: trackId, token: token) {
-                    currentTitle = info.title
-                    currentArtist = info.artist
-                    hasMetadata = true
-                    
-                    // Cache it
-                    capturedTrackId = trackId
-                    capturedTrackTitle = currentTitle
-                    capturedArtistName = currentArtist
-                }
-            }
+        if let title = npTitle, let artist = npArtist, !title.isEmpty, !artist.isEmpty {
+            currentTitle = title
+            currentArtist = artist
+            hasMetadata = true
+            capturedTrackId = trackId
+            capturedTrackTitle = title
+            capturedArtistName = artist
+        }
+    }
+
+        if !hasMetadata, let token = spotifyAccessToken {
+        if let info = fetchTrackDetails(trackId: trackId, token: token) {
+            currentTitle = info.title
+            currentArtist = info.artist
+            hasMetadata = true
+            capturedTrackId = trackId
+            capturedTrackTitle = currentTitle
+            capturedArtistName = currentArtist
         }
     }
     
@@ -128,7 +131,51 @@ private func loadCustomLyricsForTrackId(_ trackId: String) throws -> Lyrics {
         lyricsDto = try repository.getLyrics(searchQuery, options: options)
     }
     catch let error {
-        throw error
+        if let lyricsError = error as? LyricsError {
+            lyricsState.fallbackError = lyricsError
+
+            switch lyricsError {
+            case .invalidMusixmatchToken:
+                if !hasShownUnauthorizedPopUp {
+                    DispatchQueue.main.async {
+                        PopUpHelper.showPopUp(
+                            delayed: false,
+                            message: "musixmatch_unauthorized_popup".localized,
+                            buttonText: "OK".uiKitLocalized
+                        )
+                    }
+                    hasShownUnauthorizedPopUp = true
+                }
+            case .musixmatchRestricted:
+                if !hasShownRestrictedPopUp {
+                    DispatchQueue.main.async {
+                        PopUpHelper.showPopUp(
+                            delayed: false,
+                            message: "musixmatch_restricted_popup".localized,
+                            buttonText: "OK".uiKitLocalized
+                        )
+                    }
+                    hasShownRestrictedPopUp = true
+                }
+            default:
+                break
+            }
+        } else {
+            lyricsState.fallbackError = .unknownError
+        }
+
+        // Attempt Genius fallback if enabled and the primary source isn't already Genius.
+        // Genius requires title + artist to search — only attempt if we have them.
+        let canFallbackToGenius = source != .genius
+            && UserDefaults.lyricsOptions.geniusFallback
+            && !(currentTitle ?? "").isEmpty
+            && !(currentArtist ?? "").isEmpty
+        if canFallbackToGenius {
+            source = .genius
+            lyricsDto = try geniusLyricsRepository.getLyrics(searchQuery, options: options)
+        } else {
+            throw error
+        }
     }
     
     lyricsState.isEmpty = lyricsDto.lines.isEmpty
@@ -146,7 +193,16 @@ private func loadCustomLyricsForTrackId(_ trackId: String) throws -> Lyrics {
     return lyrics
 }
 
-//
+func emptyLyricsData(originalLyrics: Lyrics? = nil) -> Data? {
+    let emptyDto = LyricsDto(lines: [], timeSynced: false, romanization: .original, translation: nil)
+    var lyrics = Lyrics.with {
+        $0.data = emptyDto.toSpotifyLyricsData(source: "")
+    }
+    if let originalLyrics = originalLyrics {
+        lyrics.colors = originalLyrics.colors
+    }
+    return try? lyrics.serializedData()
+}
 
 private func loadCustomLyricsForCurrentTrack() throws -> Lyrics {
     
