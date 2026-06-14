@@ -74,6 +74,8 @@ extension EeveeLyricsSettingsViewModel {
                 }
                 
                 UserDefaults.lyricsSource = newSource
+
+                MusixmatchLyricsRepository.shared.clearCache()
             }
             .store(in: &cancellables)
     }
