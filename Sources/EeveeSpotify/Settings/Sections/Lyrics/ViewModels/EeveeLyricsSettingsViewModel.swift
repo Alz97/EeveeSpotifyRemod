@@ -87,7 +87,10 @@ class EeveeLyricsSettingsViewModel: ObservableObject {
             }, receiveValue: { [weak self] token in
                 UserDefaults.musixmatchToken = token
                 self?.musixmatchToken = token
-                UserDefaults.lyricsSource = .musixmatch
+                if UserDefaults.lyricsSource == .notReplaced {
+                    UserDefaults.lyricsSource = .musixmatch
+                    self?.lyricsSource = .musixmatch
+                }
             })
     }
 }
