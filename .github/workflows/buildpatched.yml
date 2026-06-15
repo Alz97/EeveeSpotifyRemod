@@ -145,9 +145,9 @@ jobs:
           rm -rf Payload
           unzip -q "$(basename "$OUT_IPA")"
 
-          mkdir -p "Payload/Spotify.app/Plugins"
-          rm -rf "Payload/Spotify.app/Plugins/OpenSpotifySafariExtension.appex"
-          cp -R "$OPENSPOTIFY_APPEX" "Payload/Spotify.app/Plugins/OpenSpotifySafariExtension.appex"
+          mkdir -p "Payload/Spotify.app/PlugIns"
+          rm -rf "Payload/Spotify.app/PlugIns/OpenSpotifySafariExtension.appex"
+          cp -R "$OPENSPOTIFY_APPEX" "Payload/Spotify.app/PlugIns/OpenSpotifySafariExtension.appex"
 
           # Repack only the Payload folder back into the IPA
           zip -qry "$(basename "$OUT_IPA")" Payload
