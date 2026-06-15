@@ -241,7 +241,7 @@ struct EeveeSpotify: Tweak {
         // Block upsell components injected into Hub/home JSON (e.g. upgrade banners).
         if NSClassFromString("HUBViewModelBuilderImplementation") != nil {
             AdBlockerGroup().activate()
-            log("[EeveeSpotify] AdBlockerGroup activated")
+            writeDebugLog("[EeveeSpotify] AdBlockerGroup activated")
         }
 
         // activateEeveeFlexGesture()
