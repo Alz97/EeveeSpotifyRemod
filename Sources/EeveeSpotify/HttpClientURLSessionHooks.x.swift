@@ -30,7 +30,7 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
         }
 
         if SpotifyResponsePatcher.shouldBlock(url) {
-            orig.URLSession(session, dataTask: task, didReceive: SpotifyResponsePatcher.blockedResponseData(for: url))
+            orig.URLSession(session, dataTask: task, didReceiveData: SpotifyResponsePatcher.blockedResponseData(for: url))
             orig.URLSession(session, task: task, didCompleteWithError: nil)
             return
         }
@@ -47,7 +47,7 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
 
         guard let buffer = URLSessionHelper.shared.obtainData(for: task) else {
             if url.isCustomize, let cached = SpotifyResponsePatcher.cachedCustomizeData {
-                orig.URLSession(session, dataTask: task, didReceive: cached)
+                orig.URLSession(session, dataTask: task, didReceiveData: cached)
                 orig.URLSession(session, task: task, didCompleteWithError: nil)
             } else {
                 writeDebugLog("[HCUS] Missing buffered body for \(url.absoluteString) (taskId=\(task.taskIdentifier))")
@@ -66,14 +66,14 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
                     semaphore.signal()
                 }
                 _ = semaphore.wait(timeout: .now() + .milliseconds(10000))
-                orig.URLSession(session, dataTask: task, didReceive: customLyricsData ?? buffer)
+                orig.URLSession(session, dataTask: task, didReceiveData: customLyricsData ?? buffer)
                 orig.URLSession(session, task: task, didCompleteWithError: nil)
                 return
             }
 
             if let result = try SpotifyResponsePatcher.patch(url: url, buffer: buffer) {
                 writeDebugLog("[HCUS] Patched \(result.tag.rawValue)")
-                orig.URLSession(session, dataTask: task, didReceive: result.data)
+                orig.URLSession(session, dataTask: task, didReceiveData: result.data)
                 orig.URLSession(session, task: task, didCompleteWithError: nil)
                 return
             }
