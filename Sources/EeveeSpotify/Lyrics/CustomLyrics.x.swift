@@ -82,6 +82,7 @@ private func loadCustomLyricsForTrackId(_ trackId: String) throws -> Lyrics {
             capturedTrackTitle = title
             capturedArtistName = artist
         }
+        }
     }
 
         if !hasMetadata, let token = spotifyAccessToken {
