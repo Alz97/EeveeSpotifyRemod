@@ -55,7 +55,7 @@ struct EeveePatchingSettingsView: View {
                         + "restart_is_required_description".localized
                     )
                 ) {
-                    Toggle("true_shuffle".localized", isOn: $trueShuffleEnabled)
+                    Toggle("true_shuffle".localized, isOn: $trueShuffleEnabled)
                 }
             }
 
