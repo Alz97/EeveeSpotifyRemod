@@ -314,6 +314,8 @@ private let propertyReplacements = [
     EeveePropertyReplacement(name: "enable_lyrics_sharing", scope: "ios-feature-lyrics", modification: .forceBool(true)),
     EeveePropertyReplacement(name: "is_lyrics_share_enabled", scope: "ios-feature-lyrics", modification: .forceBool(true)),
     EeveePropertyReplacement(name: "lyrics_shareable", scope: "ios-feature-lyrics", modification: .forceBool(true)),
+    EeveePropertyReplacement(name: "enable_share_link_preview_uploads", scope:"ios-feature-lyrics", modification: .forceBool(true)),
+    EeveePropertyReplacement(name: "enable_sharing_v2", scope: "ios-feature-lyrics", modification: .forceBool(true)),
     // Also patch without scope in case flag is top-level / un-scoped
     EeveePropertyReplacement(name: "enable_lyrics_share", modification: .forceBool(true)),
     EeveePropertyReplacement(name: "lyrics_share_enabled", modification: .forceBool(true)),
