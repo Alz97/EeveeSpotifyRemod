@@ -62,7 +62,7 @@ struct SponsorBlockAdvancedView: View {
             }
         }
         .listStyle(InsetGroupedListStyle())
-         .navigationTitle("advancedTitle".localized)
+        .navigationTitle("advancedTitle".localized)
         .actionSheet(isPresented: $showingResetSheet) { resetSheet() }
     }
 
