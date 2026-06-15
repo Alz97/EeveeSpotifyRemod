@@ -32,6 +32,9 @@ Se invece hai già un abbonamento Premium attivo, puoi attivare questa opzione c
 overwrite_configuration = "Sovrascrivi Configurazione";
 overwrite_configuration_description = "Sostituisci la configurazione remota con quella Premium precedente. Verrebbero così definiti la maggior parte dei parametri per l'interfaccia e l'esperienza dell'utente, può essere utile ma causare dei problemi.";
 
+true_shuffle = "True Shuffle";
+true_shuffle_dec = "Blocca la funzione Smart Shuffle del piano gratuito di Spotify, impedendole di aggiungere brani consigliati alla coda di riproduzione. La riproduzione casuale rimane all'interno della playlist. ";
+
 // Lyrics
 
 do_not_replace_lyrics = "Non sostituire i testi";
