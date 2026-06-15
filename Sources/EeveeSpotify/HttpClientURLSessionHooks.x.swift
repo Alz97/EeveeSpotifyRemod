@@ -120,3 +120,18 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
     }
 
     func URLSession(
+        _ session: URLSession,
+        dataTask task: URLSessionDataTask,
+        didReceiveData data: Data
+    ) {
+        guard let url = task.currentRequest?.url else { return }
+        if SpotifyResponsePatcher.shouldBlock(url) { return }
+        if CasitaResponseProbe.shouldProbe(url) {
+            CasitaResponseProbe.append(data, for: task)
+        }
+        if SpotifyResponsePatcher.shouldModify(url) {
+            URLSessionHelper.shared.setOrAppend(data, for: task)
+            return
+        }
+        orig.URLSession(session, dataTask: task, didReceiveData: data)
+    }
