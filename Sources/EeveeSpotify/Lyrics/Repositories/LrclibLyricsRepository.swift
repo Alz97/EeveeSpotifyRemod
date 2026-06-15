@@ -70,7 +70,7 @@ class LrclibLyricsRepository: LyricsRepository {
             throw LyricsError.decodingError
         }
 
-        return data!
+        return data
     }
     
     private func getSong(trackName: String, artistName: String) throws -> LrclibSong {
@@ -81,7 +81,7 @@ class LrclibLyricsRepository: LyricsRepository {
         do {
             return try JSONDecoder().decode(LrclibSong.self, from: data)
         } catch {
-            let body = String(data: data, encoding: .utf8) ?? "<non-utf8>"
+            _ = String(data: data, encoding: .utf8) ?? "<non-utf8>"
             throw error
         }
     }
