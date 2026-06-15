@@ -77,7 +77,7 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
                 orig.URLSession(session, task: task, didCompleteWithError: nil)
                 return
             }
-            orig.URLSession(session, dataTask: task, didReceive: buffer)
+            orig.URLSession(session, dataTask: task, didReceiveData: buffer)
             orig.URLSession(session, task: task, didCompleteWithError: nil)
         } catch {
             orig.URLSession(session, task: task, didCompleteWithError: error)
@@ -94,7 +94,7 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
            let cached = SpotifyResponsePatcher.cachedCustomizeData {
             let synthetic = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "2.0", headerFields: [:])!
             orig.URLSession(session, dataTask: task, didReceiveResponse: synthetic, completionHandler: handler)
-            orig.URLSession(session, dataTask: task, didReceive: cached)
+            orig.URLSession(session, dataTask: task, didReceiveData: cached)
             SpotifyResponsePatcher.handledCustomizeTasks.insert(task.taskIdentifier)
             return
         }
@@ -108,7 +108,7 @@ class HttpClientURLSessionHook: ClassHook<NSObject>, SpotifySessionDelegate {
             let data = try getLyricsDataForCurrentTrack(url.path)
             let ok = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "2.0", headerFields: [:])!
             orig.URLSession(session, dataTask: task, didReceiveResponse: ok, completionHandler: handler)
-            orig.URLSession(session, dataTask: task, didReceive: data)
+            orig.URLSession(session, dataTask: task, didReceiveData: data)
         } catch {
             orig.URLSession(session, task: task, didCompleteWithError: error)
         }
